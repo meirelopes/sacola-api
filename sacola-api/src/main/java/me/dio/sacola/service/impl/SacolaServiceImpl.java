@@ -1,5 +1,6 @@
 package me.dio.sacola.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,6 @@ import me.dio.sacola.enumeration.FormaPagamento;
 import me.dio.sacola.model.Item;
 import me.dio.sacola.model.Restaurante;
 import me.dio.sacola.model.Sacola;
-import me.dio.sacola.repository.ItemRepository;
 import me.dio.sacola.repository.ProdutoRepository;
 import me.dio.sacola.repository.SacolaRepository;
 import me.dio.sacola.resource.ItemDto;
@@ -26,8 +26,6 @@ public class SacolaServiceImpl implements SacolaService {
 	@Autowired
 	private final ProdutoRepository produtoRepository;
 	
-	@Autowired
-	private final ItemRepository itemRepository;
 	
 	@Override
 	public Sacola verSacola(Long id) {
@@ -84,6 +82,19 @@ public class SacolaServiceImpl implements SacolaService {
 
 			}
 		}
+		
+		List<Double> valorDosItens = new ArrayList<>();
+		for (Item itemDaSacola : itensDaSacola) {
+			double valorTotalItem = 
+					itemDaSacola.getProduto().getValorUnitario() * itemDaSacola.getQuantidade();
+			valorDosItens.add(valorTotalItem);
+		}
+		
+		double valorTotalSacola = valorDosItens.stream()
+				.mapToDouble(valorTotalDeCadaItem -> valorTotalDeCadaItem).sum();
+		
+		sacola.setValorTotal(valorTotalSacola);
+		
 		sacolaRepository.save(sacola);
 
 		return itemParaSerInserido;
